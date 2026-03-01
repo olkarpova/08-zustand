@@ -8,9 +8,9 @@ import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import Pagination from "@/components/Pagination/Pagination";
 import SearchBox from "@/components/SearchBox/SearchBox";
-import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 import css from "./page.module.css";
+import Link from "next/link";
 
 interface NotesClientProps {
   tag?: string;
@@ -20,7 +20,7 @@ export default function NotesClient({ tag }: NotesClientProps) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 12;
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   const { data, isLoading, isError } = useQuery<FetchNotesResponse>({
     queryKey: ["notes", { page, search, perPage, tag }],
@@ -59,36 +59,109 @@ export default function NotesClient({ tag }: NotesClientProps) {
           />
         )}
 
-        <button
-          className={css.button}
-          onClick={() => {
-            setIsModalOpen(true);
-          }}
-        >
+        <Link href='/notes/action/create' aria-label="crete note" className={css.createButton}>
           Create note +
-        </button>
+        </Link>
       </header>
 
       {isLoading && <strong>Loading...</strong>}
       {isError && <strong>Error!!!</strong>}
       {data && data.notes.length > 0 && <NoteList items={data.notes} />}
       {data && data?.notes.length === 0 && <p>No notes found</p>}
-
-      {/* console.log("CURRENT isModalOpen =", isModalOpen); */}
-      {isModalOpen && (
-        <>
-          <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <NoteForm
-              onCancel={() => {
-                setIsModalOpen(false);
-              }}
-            />
-          </Modal>
-        </>
-      )}
     </div>
   );
-}
+} 
+//==============hw 7=================================================
+// "use client";
+// import { fetchNotes } from "@/lib/api";
+// import { keepPreviousData, useQuery } from "@tanstack/react-query";
+// import { FetchNotesResponse } from "@/lib/api";
+// import NoteList from "@/components/NoteList/NoteList";
+// import { useState } from "react";
+// import { useDebouncedCallback } from "use-debounce";
+// import Pagination from "@/components/Pagination/Pagination";
+// import SearchBox from "@/components/SearchBox/SearchBox";
+// import Modal from "@/components/Modal/Modal";
+// import NoteForm from "@/components/NoteForm/NoteForm";
+// import css from "./page.module.css";
+
+// interface NotesClientProps {
+//   tag?: string;
+// }
+
+// export default function NotesClient({ tag }: NotesClientProps) {
+//   const [search, setSearch] = useState("");
+//   const [page, setPage] = useState(1);
+//   const perPage = 12;
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+
+//   const { data, isLoading, isError } = useQuery<FetchNotesResponse>({
+//     queryKey: ["notes", { page, search, perPage, tag }],
+//     queryFn: () => fetchNotes(page, search || undefined, perPage, tag),
+//     placeholderData: keepPreviousData,
+//     refetchOnMount: false,
+//     // Використовуємо prefetch з сервера
+//     // при монтуванні компонента запит не буде виконуватись
+//   });
+
+//   const debouncedSearch = useDebouncedCallback((value: string) => {
+//     setSearch(value);
+//     setPage(1);
+//   }, 500);
+
+//   const handleSearchChange = (newSearch: string) => {
+//     debouncedSearch(newSearch);
+//   };
+
+//   const handlePageChange = (newPage: number) => {
+//     setPage(newPage);
+//   };
+
+//   if (isLoading) return <div>Loading...</div>;
+//   if (isError) return <div>Error loading notes</div>;
+
+//   return (
+//     <div className={css.app}>
+//       <header className={css.toolbar}>
+//         <SearchBox onChange={handleSearchChange} />
+//         {data && data.totalPages > 1 && (
+//           <Pagination
+//             totalPages={data?.totalPages || 0}
+//             currentPage={page}
+//             onPageChange={handlePageChange}
+//           />
+//         )}
+
+//         <button
+//           className={css.button}
+//           onClick={() => {
+//             setIsModalOpen(true);
+//           }}
+//         >
+//           Create note +
+//         </button>
+//       </header>
+
+//       {isLoading && <strong>Loading...</strong>}
+//       {isError && <strong>Error!!!</strong>}
+//       {data && data.notes.length > 0 && <NoteList items={data.notes} />}
+//       {data && data?.notes.length === 0 && <p>No notes found</p>}
+
+//       {/* console.log("CURRENT isModalOpen =", isModalOpen); */}
+//       {isModalOpen && (
+//         <>
+//           <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+//             <NoteForm
+//               onCancel={() => {
+//                 setIsModalOpen(false);
+//               }}
+//             />
+//           </Modal>
+//         </>
+//       )}
+//     </div>
+//   );
+// }
 
 //==============v.1=================================================
 // "use client";

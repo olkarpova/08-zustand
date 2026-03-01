@@ -1,38 +1,40 @@
-import { Formik, Form, Field, type FormikHelpers, ErrorMessage } from "formik";
+"use client"
+
 import css from "./NoteForm.module.css"
-import { noteValidationSchema } from "./validationSchema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote } from "@/lib/api";
-import type { NoteTag } from "../../types/note";
+import { createNote, NewNoteData } from "@/lib/api";
+import { NoteTag} from "../../types/note";
+import { useRouter } from "next/navigation";
+// 1. Імпортуємо хук
+import { useNoteDraftStore } from "@/lib/store/noteStore";
 
-export interface NoteFormValues {
-    title: string,
-    content: string,
-    tag: NoteTag,
-}
+const TAGS: NoteTag[] = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
 
-interface NoteFormProps {
-    onCancel: () => void;
-    // onSubmit: (values: NoteFormValues) => void;
-}
-
-
-const initialValues: NoteFormValues = {
-    title: '',
-    content: '',
-    tag: 'Todo',
-}
-
-
-export default function NoteForm({ onCancel }: NoteFormProps) {
+export default function NoteForm() {
+    const router = useRouter();
+    // 2. Викликаємо хук і отримуємо значення
+    const { draft, setDraft, clearDraft } = useNoteDraftStore();
+    // 3. Оголошуємо функцію для onChange щоб при зміні будь-якого 
+	// елемента форми оновити чернетку нотатки в сторі
+    const handleChange = (
+        event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+    ) => {
+        // 4. Коли користувач змінює будь-яке поле форми — оновлюємо стан
+        setDraft({
+            ...draft,
+            [event.target.name]: event.target.value as NoteTag,
+        });
+    };
 
     const queryClient = useQueryClient();
 
     const createNoteMutation = useMutation({
         mutationFn: createNote,
         onSuccess: () => {
+            // 5. При успішному створенні нотатки очищуємо чернетку
+            clearDraft();
             queryClient.invalidateQueries({ queryKey: ['notes'] });
-            onCancel();
+            router.push('/notes/filter/all');
         },
         onError: (error) => {
             console.error("Error creating note:", error);
@@ -40,84 +42,191 @@ export default function NoteForm({ onCancel }: NoteFormProps) {
         },
     });
     
-    const handleSubmit = (
-        values: NoteFormValues,
-        actions: FormikHelpers<NoteFormValues>
-    ) => {
-        // onSubmit(values);
-
-        // actions.resetForm();
-        // actions.setSubmitting(false);
-        createNoteMutation.mutate(values, {
-
-            onSettled: () => {
-                actions.resetForm();
-                actions.setSubmitting(false);
-            },
-        });
+    const handleSubmit = (formData: FormData) => {
+        const values = Object.fromEntries(formData) as NewNoteData;
+        createNoteMutation.mutate(values);
     }; 
 
-    
+    const onCancel = () => {
+        router.push('/notes/filter/all');
+    };
+    // 6. До кожного елемента додаємо defaultValue та onChange
+	// щоб задати початкове значення із чернетки 
+	// та при зміні оновити чернетку в сторі
     return (
-        <Formik
-            initialValues={initialValues}
-            validationSchema={noteValidationSchema}
-            onSubmit={handleSubmit}>
-            {({ isSubmitting, isValid, dirty }) => (
-               <Form className={css.form}>
-                    <div className={css.formGroup}>
-                        <label htmlFor="title">Title</label>
-                        <Field
-                            id="title"
-                            type="text"
-                            name="title"
-                            className={css.input}
-                        />
-                        <ErrorMessage name="title" component='span' className={css.error} />
-                    </div>
-
-                    <div className={css.formGroup}>
-                        <label htmlFor="content">Content</label>
-                        <Field
-                            as='textarea'
-                            id="content"
-                            name="content"
-                            rows={8}
-                            className={css.textarea}
-                        />
-                        <ErrorMessage name="content" component="span" className={css.error} />
-                    </div>
-
-                    <div className={css.formGroup}>
-                        <label htmlFor="tag">Tag</label>
-                        <Field as="select" id="tag" name="tag" className={css.select}>
-                            <option value="Todo">Todo</option>
-                            <option value="Work">Work</option>
-                            <option value="Personal">Personal</option>
-                            <option value="Meeting">Meeting</option>
-                            <option value="Shopping">Shopping</option>
-                        </Field>
-                        <ErrorMessage name="tag" component="span" className={css.error} />
-                    </div>
+        <form action={handleSubmit} className={css.form}>
+            <div className={css.formGroup}>
+                <label htmlFor="title">Title
+                    <input
+                    type="text"
+                        name="title"
+// Щоразу при переході на маршрут /notes/action/create перевіряйте, 
+// чи існує draft в Zustand. Якщо draft є — завантажуйте саме його в 
+// початкові значення форми, якщо немає — то в початкові значення форми 
+// підставляйте об’єкт initialDraft.
+                        defaultValue={draft?.title}
+                        onChange={handleChange}
+                    className={css.input}
+                    required
+                    minLength={3}
+                    maxLength={50}
+                    disabled={createNoteMutation.isPending}
+                />
+                </label> 
+                
+            </div>
+            <div className={css.formGroup}>
+                <label htmlFor="content">Content
+                 <textarea
+                    name="content"
+                        defaultValue={draft?.content}
+                        onChange={handleChange}
+                    rows={8}
+                    className={css.textarea}
+                    maxLength={500}
+                    required
+                    disabled={createNoteMutation.isPending}
+                />
+                </label> 
+            </div>
             
-                <div className={css.actions}>
-                    <button
-                        type="button"
-                        className={css.cancelButton}
-                        onClick={onCancel}
+            <div className={css.formGroup}>
+                <label htmlFor="tag">Tag
+                    <select id='tag' name="tag"
+                        defaultValue={draft?.tag}
+                        onChange={handleChange}
+                        className={css.select} required>
+                        {TAGS.map((tag) => (
+                            <option key={tag} value={tag}>
+                                {tag}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+            </div>
+
+            <div className={css.actions}>
+                <button
+                    type="button"
+                    className={css.cancelButton}
+                    onClick={onCancel}
+                    disabled={createNoteMutation.isPending}
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                        className={css.submitButton}
+                        disabled={createNoteMutation.isPending}
                     >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                            className={css.submitButton}
-                        disabled={isSubmitting || !isValid || !dirty}
-                    >
-                        Create note
-                    </button>
-                </div>
-            </Form> 
-            )}
-        </Formik>
+                    { createNoteMutation.isPending ? "Creating..." : 'Create note'}
+                </button>
+            </div>
+        </form>
     );
 }
+
+//========NoteForm without Formic: 
+//Внесіть зміни у компонент components/NoteForm/NoteForm.tsx, 
+// він має створювати таку ж розмітку, як і раніше, 
+// але для цього вам потрібно використовувати не Formik, 
+// а стандартні HTML-форми з formAction, щоб надалі зручно 
+// інтегрувати збереження чернетки через Zustand не створюючи зайву і 
+// складну логіку.
+
+// 'use client';
+
+// import { useRouter } from 'next/navigation';  // ✅ Для Cancel
+// import { useMutation, useQueryClient } from '@tanstack/react-query';
+// import { createNote, type NewNoteData } from '@/lib/api';
+// import css from './NoteForm.module.css';
+// import type { NoteTag } from '../../types/note';  // Ваш тип
+
+// const TAGS: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];  // ✅ Статично
+
+// export default function NoteForm() {
+//   const router = useRouter();
+//   const queryClient = useQueryClient();
+
+//   const createNoteMutation = useMutation({
+//     mutationFn: createNote,
+//     onSuccess: () => {
+//       queryClient.invalidateQueries({ queryKey: ['notes'] });
+//       router.push('/notes/filter/all');  // ✅ Редірект замість onCancel
+//     },
+//     onError: (error) => {
+//       console.error('Error creating note:', error);
+//       alert('Failed to create note. Please try again.');
+//     },
+//   });
+
+//   const handleSubmit = (formData: FormData) => {
+//     const values = Object.fromEntries(formData) as NewNoteData;
+//     createNoteMutation.mutate(values);
+//   };
+
+//   const handleCancel = () => {
+//     router.push('/notes/filter/all');
+//   };
+
+//   return (
+//     <form action={handleSubmit} className={css.form}>
+//       <div className={css.formGroup}>
+//         <label htmlFor="title">Title</label>
+//         <input
+//           id="title"
+//           type="text"
+//           name="title"
+//           className={css.input}
+//           required
+//           minLength={3}
+//           maxLength={50}
+//           disabled={createNoteMutation.isPending}
+//         />
+//       </div>
+
+//       <div className={css.formGroup}>
+//         <label htmlFor="content">Content</label>
+//         <textarea
+//           id="content"
+//           name="content"
+//           rows={8}
+//           className={css.textarea}
+//           maxLength={500}
+//           required
+//           disabled={createNoteMutation.isPending}
+//         />
+//       </div>
+
+//       <div className={css.formGroup}>
+//         <label htmlFor="tag">Tag</label>
+//         <select id="tag" name="categoryId" className={css.select} required>
+//           {TAGS.map((tag) => (
+//             <option key={tag} value={tag}>
+//               {tag}
+//             </option>
+//           ))}
+//         </select>
+//       </div>
+
+//       <div className={css.actions}>
+//         <button
+//           type="button"
+//           className={css.cancelButton}
+//           onClick={handleCancel}
+//           disabled={createNoteMutation.isPending}
+//         >
+//           Cancel
+//         </button>
+//         <button
+//           type="submit"
+//           className={css.submitButton}
+//           disabled={createNoteMutation.isPending}
+//         >
+//           {createNoteMutation.isPending ? 'Creating...' : 'Create note'}
+//         </button>
+//       </div>
+//     </form>
+//   );
+// }

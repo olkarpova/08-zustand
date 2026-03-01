@@ -35,11 +35,16 @@ export const fetchNotes = async (
   return response.data;
   };
 
-// =====Функція для створення нотатки
+// =====Функція для створення нотатки====
+
+export type NewNoteData = {
+  title: string;
+  content: string;
+  tag: string;
+};
 
 export const createNote = async (
-  noteData: Pick<Note, 'title' | 'content' | 'tag'>
-): Promise<Note> => {
+  noteData: NewNoteData): Promise<Note> => {
   const response = await axios.post<Note>(
     "https://notehub-public.goit.study/api/notes",
     noteData,
