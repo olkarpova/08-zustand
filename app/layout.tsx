@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
-// import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
-// import { title } from "process";
 import {Roboto} from "next/font/google" 
 
 export const metadata: Metadata = {
@@ -12,7 +10,7 @@ export const metadata: Metadata = {
   description: "A simple and efficient app for creating and organizing your notes.",
   openGraph: {
     type: "website",
-    url: "https://notehub.com", //link na vercel
+    url: "https://08-zustand-8tplz6fwx-olena-karpova.vercel.app/", //link na vercel
     title: "NoteHub",
     description: "A simple and efficient app for creating and organizing your notes.",
     //для презентабельності

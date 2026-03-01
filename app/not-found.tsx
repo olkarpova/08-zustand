@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   // url: "https://your-notehub-app.vercel.app/",
   openGraph: {
     type: "website",
-    url: "https://your-notehub-app.vercel.app",
+    url: "https://08-zustand-8tplz6fwx-olena-karpova.vercel.app/",
     title: "Page not found-NoteHub",
     description: "The requested page does not exist in NoteHub notes application.n",
     // siteName: "My Website",

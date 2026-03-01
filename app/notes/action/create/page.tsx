@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Create a new note in NoteHub. Add title, content, and tag to organize your ideas.",
   openGraph: {
     type: "website",
-    url: "https://notehub.com", //link na vercel
+    url: "https://08-zustand-8tplz6fwx-olena-karpova.vercel.app/", //link na vercel
     title: "CreateNote - NoteHub",
     description: "Create a new note with title, content, and category tag.",
     //для презентабельності
