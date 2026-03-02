@@ -12,7 +12,7 @@ interface NoteListProps {
 
 export default function NoteList({ items }: NoteListProps) {
   const queryClient = useQueryClient();
-
+  console.log(items)
   // Mutation для видалення нотатки==============
   const deleteNoteMutation = useMutation({
     mutationFn: deleteNote,

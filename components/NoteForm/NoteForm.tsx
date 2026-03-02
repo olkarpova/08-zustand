@@ -43,13 +43,13 @@ export default function NoteForm() {
         onSuccess: async () => {
             // 5. При успішному створенні нотатки очищуємо чернетку
             clearDraft();
-            // invalidete не потрібен
+            // invalidete не потрібен 2:07
             // queryClient.invalidateQueries({
             //     queryKey: ['notes'],
             // });
             //без цього не оновлювався список нотаток:
-            await queryClient.invalidateQueries({ queryKey: ['notes'] });
-            await queryClient.refetchQueries({ queryKey: ['notes'] });
+            // await queryClient.invalidateQueries({ queryKey: ['notes'] });
+            // await queryClient.refetchQueries({ queryKey: ['notes'] });
             router.push('/notes/filter/all');
         },
         onError: (error) => {

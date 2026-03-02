@@ -24,7 +24,9 @@ export default function NotesClient({ tag }: NotesClientProps) {
     queryKey: ["notes", { page, search, perPage, tag }],
     queryFn: () => fetchNotes(page, search || undefined, perPage, tag),
     placeholderData: keepPreviousData,
-    refetchOnMount: false,
+    refetchOnMount: true,
+    //змінила з false на true 
+    // refetchOnMount: false - вимикає повторний запит при монтуванні, оскільки дані вже є з prefetchQuery
     // Використовуємо prefetch з сервера
     // при монтуванні компонента запит не буде виконуватись
   });
@@ -44,7 +46,8 @@ export default function NotesClient({ tag }: NotesClientProps) {
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading notes</div>;
-
+  console.log("Data Notes: ");
+  console.log(data?.notes);
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
