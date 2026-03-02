@@ -1,4 +1,3 @@
-// ==============v.2=================================================
 "use client";
 import { fetchNotes } from "@/lib/api";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -8,7 +7,6 @@ import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import Pagination from "@/components/Pagination/Pagination";
 import SearchBox from "@/components/SearchBox/SearchBox";
-import NoteForm from "@/components/NoteForm/NoteForm";
 import css from "./page.module.css";
 import Link from "next/link";
 
@@ -64,8 +62,6 @@ export default function NotesClient({ tag }: NotesClientProps) {
         </Link>
       </header>
 
-      {isLoading && <strong>Loading...</strong>}
-      {isError && <strong>Error!!!</strong>}
       {data && data.notes.length > 0 && <NoteList items={data.notes} />}
       {data && data?.notes.length === 0 && <p>No notes found</p>}
     </div>

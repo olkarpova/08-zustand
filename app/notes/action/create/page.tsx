@@ -7,13 +7,13 @@ export const metadata: Metadata = {
   description: "Create a new note in NoteHub. Add title, content, and tag to organize your ideas.",
   openGraph: {
     type: "website",
-    url: "https://08-zustand-8tplz6fwx-olena-karpova.vercel.app/", //link na vercel
+    url: "https://08-zustand-8tplz6fwx-olena-karpova.vercel.app/notes/action/create", //link na vercel
     title: "CreateNote - NoteHub",
     description: "Create a new note with title, content, and category tag.",
     //для презентабельності
-    siteName: "CreateNote", //can change it depends what do we want to include here
+    siteName: "NoteHub", //can change it depends what do we want to include here
     images: [{
-      url: "'/notehub-og-meta.jpg'",
+      url: '/notehub-og-meta.jpg',
       width: 600,
       height: 300,
       alt: "note image"
@@ -21,16 +21,13 @@ export const metadata: Metadata = {
 }
 }
 
-export 
-const CreateNote = () => {
+export default function Page () {
   return (
   <main className={css.main}>
     <div className={css.container}>
       <h1 className={css.title}>Create note</h1>
-      <NoteForm/>
+      <NoteForm />
     </div>
   </main>
   );
 };
-
-export default CreateNote;

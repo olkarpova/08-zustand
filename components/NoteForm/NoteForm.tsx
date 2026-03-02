@@ -3,7 +3,8 @@
 import css from "./NoteForm.module.css"
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote, NewNoteData } from "@/lib/api";
-import { NoteTag} from "../../types/note";
+import { NoteTag } from "../../types/note";
+//useRouter from next/navigation!!!
 import { useRouter } from "next/navigation";
 // 1. Імпортуємо хук
 import { useNoteDraftStore } from "@/lib/store/noteStore";
@@ -14,6 +15,15 @@ export default function NoteForm() {
     const router = useRouter();
     // 2. Викликаємо хук і отримуємо значення
     const { draft, setDraft, clearDraft } = useNoteDraftStore();
+    // const state = useNoteDraftStore();
+    // console.log(state);
+
+    // 1:22
+    // const draft = useNoteDraftStore((state) => {state.draft}); - ф селектор
+    // const changeDraft = usenoteDraftStore((state) => {state.setdraft})
+    //це функції селектори, виносимо їх в окремі змінні в store, бо 
+    // структура story може змінюватись
+
     // 3. Оголошуємо функцію для onChange щоб при зміні будь-якого 
 	// елемента форми оновити чернетку нотатки в сторі
     const handleChange = (
@@ -30,10 +40,16 @@ export default function NoteForm() {
 
     const createNoteMutation = useMutation({
         mutationFn: createNote,
-        onSuccess: () => {
+        onSuccess: async () => {
             // 5. При успішному створенні нотатки очищуємо чернетку
             clearDraft();
-            queryClient.invalidateQueries({ queryKey: ['notes'] });
+            // invalidete не потрібен
+            // queryClient.invalidateQueries({
+            //     queryKey: ['notes'],
+            // });
+            //без цього не оновлювався список нотаток:
+            await queryClient.invalidateQueries({ queryKey: ['notes'] });
+            await queryClient.refetchQueries({ queryKey: ['notes'] });
             router.push('/notes/filter/all');
         },
         onError: (error) => {
@@ -42,10 +58,16 @@ export default function NoteForm() {
         },
     });
     
-    const handleSubmit = (formData: FormData) => {
-        const values = Object.fromEntries(formData) as NewNoteData;
-        createNoteMutation.mutate(values);
-    }; 
+    // const handleSubmit = (formData: FormData) => {
+    //     const values = Object.fromEntries(formData) as NewNoteData;
+    //     createNoteMutation.mutate(values);
+    // }; 
+//formData не потрібна бо дані не збираємо з форми, 
+// дані вже збережені в глобальному store
+    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        createNoteMutation.mutate(draft);
+    }
 
     const onCancel = () => {
         router.push('/notes/filter/all');
@@ -54,12 +76,15 @@ export default function NoteForm() {
 	// щоб задати початкове значення із чернетки 
 	// та при зміні оновити чернетку в сторі
     return (
-        <form action={handleSubmit} className={css.form}>
+        // <form action={handleSubmit} className={css.form}>
+        <form onSubmit={handleSubmit} className={css.form}>
             <div className={css.formGroup}>
                 <label htmlFor="title">Title
                     <input
+                        // value={draft.title}
+                        //контролюємо input
                     type="text"
-                        name="title"
+                    name="title"
 // Щоразу при переході на маршрут /notes/action/create перевіряйте, 
 // чи існує draft в Zustand. Якщо draft є — завантажуйте саме його в 
 // початкові значення форми, якщо немає — то в початкові значення форми 
@@ -137,13 +162,13 @@ export default function NoteForm() {
 
 // 'use client';
 
-// import { useRouter } from 'next/navigation';  // ✅ Для Cancel
+// import { useRouter } from 'next/navigation';  
 // import { useMutation, useQueryClient } from '@tanstack/react-query';
 // import { createNote, type NewNoteData } from '@/lib/api';
 // import css from './NoteForm.module.css';
 // import type { NoteTag } from '../../types/note';  // Ваш тип
 
-// const TAGS: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];  // ✅ Статично
+// const TAGS: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];  // Статично
 
 // export default function NoteForm() {
 //   const router = useRouter();
@@ -153,7 +178,7 @@ export default function NoteForm() {
 //     mutationFn: createNote,
 //     onSuccess: () => {
 //       queryClient.invalidateQueries({ queryKey: ['notes'] });
-//       router.push('/notes/filter/all');  // ✅ Редірект замість onCancel
+//       router.push('/notes/filter/all');  // Редірект замість onCancel
 //     },
 //     onError: (error) => {
 //       console.error('Error creating note:', error);

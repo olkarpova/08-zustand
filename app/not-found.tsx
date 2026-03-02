@@ -23,6 +23,8 @@ export const metadata: Metadata = {
 
 const NotFound = () => {
   return (
+    <>
+      <link rel="preload" href="/_next/static/css/not-found.css" as="style" />
     <div>
       <h1 className={css.title}>404 - Page not found</h1>
       <p className={css.description}>
@@ -30,6 +32,8 @@ const NotFound = () => {
       </p>
       {/* <Link href="/">Go back home</Link> */}
     </div>
+    </>
+    
   );
 };
 export default NotFound;
